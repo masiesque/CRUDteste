@@ -18,8 +18,22 @@ const getByName = (req,res)=>
     });
 
 };
+const createUser= (req,res)=>
+{
+    const {nome,idade,email} = req.body;
+    res.json({
+        messagem:"Usuário criado",
+        dataUser:{
+            nome,
+            idade,
+            email
+        }
+    })
+
+}
 
     module.exports={
     getById,
     getByName,
+    createUser
 };
