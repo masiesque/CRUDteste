@@ -1,36 +1,72 @@
+const pool = require("../config/db");
 
-const getById = (req,res)=>
+const getById = async (req,res)=>
 {
-    const idG = req.params.id;
-    return res.json({
-        message:"Usuário buscado pelo ID",
-        idRecebido:idG
-    });
-    
+    try{
+        const id= req.params.id;
+
+        const result = await pool.query(`
+            SELECT * from users
+            WHERE id =$1`,
+        [id]);
+
+        if(result.rows.length === 0)
+        {
+            return res.status(404).json({
+                message: "User not found",
+                erro: err
+            });
+        };
+        res.status(200).json({
+            message:"User creted sucessfully.",
+            User: result.rows[0]
+        });
+
+    }catch(err)
+    {
+        res.status(500).json({erro:err.message});
+    }
+
+
 };
 
-const getByName = (req,res)=>
-{
-    const nameG = req.query.name;
-    return res.json({
-        message:"Usuário buscado por meio do nome",
-        nomeReceviso:nameG
-    });
+const getByName = async (req, res) => {
+    try {
+        const name = req.query.name;
 
+        const result = await pool.query(`
+            SELECT * FROM users
+            WHERE nome = $1;
+        `,
+        [name]);
+
+        if (result.rows.length === 0) 
+            return res.status(404).json({ message: "Usuário não encontrado." });
+
+        return res.status(200).json({
+            message: "Usuário encontrado com sucesso.",
+            User: result.rows[0]
+        });
+
+    } catch (err) {
+        return res.status(500).json({ Erro: err.message });
+    }
 };
-const createUser= (req,res)=>
+const createUser= async (req,res)=>
 {
-    const {nome,idade,email} = req.body;
-    res.json({
-        messagem:"Usuário criado",
-        dataUser:{
-            nome,
-            idade,
-            email
-        }
-    })
-
-}
+    try{
+        const {nome,idade,email} = req.body;
+    const result = await pool.query(`
+        INSERT INTO users (nome,idade,email)
+        values ($1,$2,$3)
+        RETURNING id, nome, idade, email;`,
+    [nome,idade,email]);    
+    res.status(201).json(result.rows[0]);
+    }catch(err)
+    {
+        res.status(500).json({erro: err.message});    
+    }
+};
 
     module.exports={
     getById,
