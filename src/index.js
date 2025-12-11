@@ -10,10 +10,6 @@ app.use("/user", require("./routes/userRoutes"))
 
 
 
-
-
-
-
 app.listen(port || 3000,()=>{
 console.log("Servidor rodando na porta:",port);
 });

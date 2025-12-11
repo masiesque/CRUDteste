@@ -68,8 +68,65 @@ const createUser= async (req,res)=>
     }
 };
 
+const updateUser = async (req, res)=>
+{
+    try{
+        const{id} = req.params;
+        const{nome,email,idade} = req.body;
+
+        if(!nome && !email & !idade)
+        return res.status(404).json({message:"Send at least one atributte to update your profile"});
+
+        const result = await pool.query(`
+            UPDATE users
+            SET 
+                nome = COALESCE($1, nome),
+                email = COALESCE($2, email),
+                idade = COALESCE($3, idade)
+            WHERE id = $4
+            RETURNING *;`,
+        [nome,email, idade,id]
+        );
+        
+        res.status(200).json({
+            message:"User updated",
+            User: result.rows[0]
+        });
+        
+    }catch(err)
+    {
+        res.status(500).json({message:err.message});
+    }   
+};
+
+const deleteUser = async (req,res)=>
+{
+    try{
+        const {id} = req.params;
+
+        const result = await pool.query(`
+            DELETE FROM users
+            WHERE id =$1
+            RETURNING*`,
+        [id]);
+
+        if(result.rowCount === 0)
+            return res.status(404).json({message:"User not found! Contact us"});
+
+        res.status(201).json({message:"User deleted",
+            User:result.rows[0]
+        });
+
+    }catch(err)
+    {
+        res.status(500).json({message:err.message});
+    }
+};
+
     module.exports={
     getById,
     getByName,
-    createUser
+    createUser,
+    updateUser,
+    deleteUser
 };
